@@ -2,24 +2,26 @@ package io.ronghuiye.minispring.test.bean;
 
 public class UserService {
 
-    private String name;
-
-    public UserService() {
-
-    }
-
-    public UserService(String name) {
-        this.name = name;
-    }
+    private String uId;
+    private UserDao userDao;
 
     public void queryUserInfo() {
-        System.out.println("query user info");
+        System.out.println("query user info: " + userDao.queryUserName(uId));
     }
 
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("");
-        sb.append("").append(name);
-        return sb.toString();
+    public String getuId() {
+        return uId;
+    }
+
+    public void setuId(String uId) {
+        this.uId = uId;
+    }
+
+    public UserDao getUserDao() {
+        return userDao;
+    }
+
+    public void setUserDao(UserDao userDao) {
+        this.userDao = userDao;
     }
 }
