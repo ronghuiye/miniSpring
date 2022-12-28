@@ -1,6 +1,9 @@
 package io.ronghuiye.minispring.test.bean;
 
-public class UserService {
+import io.ronghuiye.minispring.beans.factory.DisposableBean;
+import io.ronghuiye.minispring.beans.factory.InitializingBean;
+
+public class UserService implements InitializingBean, DisposableBean {
 
     private String uId;
 
@@ -42,5 +45,15 @@ public class UserService {
 
     public void setLocation(String location) {
         this.location = location;
+    }
+
+    @Override
+    public void destroy() throws Exception {
+        System.out.println("execute: UserService.destroy");
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        System.out.println("execute: UserService.afterPropertiesSet");
     }
 }
