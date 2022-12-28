@@ -1,9 +1,8 @@
 package io.ronghuiye.minispring.test;
 
 import io.ronghuiye.minispring.context.support.ClassPathXmlApplicationContext;
-import io.ronghuiye.minispring.test.bean.UserService;
+import io.ronghuiye.minispring.test.event.CustomEvent;
 import org.junit.Test;
-import org.openjdk.jol.info.ClassLayout;
 
 public class ApiTest {
     //need to add vm arg(--add-opens java.base/java.lang=ALL-UNNAMED) in java18
@@ -26,26 +25,10 @@ public class ApiTest {
 //    }
 
     @Test
-    public void test_prototype() {
+    public void test_event() {
         ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:spring.xml");
+        applicationContext.publishEvent(new CustomEvent(applicationContext, 1019129009086763L, "works！"));
         applicationContext.registerShutdownHook();
-
-        UserService userService1 = applicationContext.getBean("userService", UserService.class);
-        UserService userService2 = applicationContext.getBean("userService", UserService.class);
-
-        System.out.println(userService1);
-        System.out.println(userService2);
-
-        System.out.println(userService1 + Integer.toHexString(userService1.hashCode()));
-        System.out.println(ClassLayout.parseInstance(userService1).toPrintable());
     }
 
-    @Test
-    public void test_factory_bean() {
-        ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:spring.xml");
-        applicationContext.registerShutdownHook();
-
-        UserService userService = applicationContext.getBean("userService", UserService.class);
-        System.out.println("result：" + userService.queryUserInfo());
-    }
 }

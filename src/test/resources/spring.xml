@@ -1,13 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans>
 
-    <bean id="userService" class="io.ronghuiye.minispring.test.bean.UserService" scope="prototype">
-        <property name="uId" value="10001"/>
-        <property name="company" value="ag"/>
-        <property name="location" value="miami"/>
-        <property name="userDao" ref="proxyUserDao"/>
-    </bean>
-
-    <bean id="proxyUserDao" class="io.ronghuiye.minispring.test.bean.ProxyBeanFactory"/>
-
+    <bean class="io.ronghuiye.minispring.test.event.ContextRefreshedEventListener"/>
+    <bean class="io.ronghuiye.minispring.test.event.CustomEventListener"/>
+    <bean class="io.ronghuiye.minispring.test.event.ContextClosedEventListener"/>
 </beans>
