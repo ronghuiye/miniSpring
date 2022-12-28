@@ -3,6 +3,7 @@ package io.ronghuiye.minispring.test;
 import io.ronghuiye.minispring.context.support.ClassPathXmlApplicationContext;
 import io.ronghuiye.minispring.test.bean.UserService;
 import org.junit.Test;
+import org.openjdk.jol.info.ClassLayout;
 
 public class ApiTest {
     //need to add vm arg(--add-opens java.base/java.lang=ALL-UNNAMED) in java18
@@ -25,15 +26,26 @@ public class ApiTest {
 //    }
 
     @Test
-    public void test_xml() {
+    public void test_prototype() {
+        ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:spring.xml");
+        applicationContext.registerShutdownHook();
+
+        UserService userService1 = applicationContext.getBean("userService", UserService.class);
+        UserService userService2 = applicationContext.getBean("userService", UserService.class);
+
+        System.out.println(userService1);
+        System.out.println(userService2);
+
+        System.out.println(userService1 + Integer.toHexString(userService1.hashCode()));
+        System.out.println(ClassLayout.parseInstance(userService1).toPrintable());
+    }
+
+    @Test
+    public void test_factory_bean() {
         ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:spring.xml");
         applicationContext.registerShutdownHook();
 
         UserService userService = applicationContext.getBean("userService", UserService.class);
-        String result = userService.queryUserInfo();
-        System.out.println("result：" + result);
-
-        System.out.println("ApplicationContextAware：" + userService.getApplicationContext());
-        System.out.println("BeanFactoryAware：" + userService.getBeanFactory());
+        System.out.println("result：" + userService.queryUserInfo());
     }
 }
