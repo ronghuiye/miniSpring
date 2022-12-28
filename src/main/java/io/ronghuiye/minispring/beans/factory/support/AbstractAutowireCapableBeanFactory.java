@@ -5,8 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import io.ronghuiye.minispring.beans.BeansException;
 import io.ronghuiye.minispring.beans.PropertyValue;
 import io.ronghuiye.minispring.beans.PropertyValues;
-import io.ronghuiye.minispring.beans.factory.DisposableBean;
-import io.ronghuiye.minispring.beans.factory.InitializingBean;
+import io.ronghuiye.minispring.beans.factory.*;
 import io.ronghuiye.minispring.beans.factory.config.AutowireCapableBeanFactory;
 import io.ronghuiye.minispring.beans.factory.config.BeanDefinition;
 import io.ronghuiye.minispring.beans.factory.config.BeanPostProcessor;
@@ -81,6 +80,18 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
     }
 
     private Object initializeBean(String beanName, Object bean, BeanDefinition beanDefinition) {
+
+        if (bean instanceof Aware) {
+            if (bean instanceof BeanFactoryAware) {
+                ((BeanFactoryAware) bean).setBeanFactory(this);
+            }
+            if (bean instanceof BeanClassLoaderAware) {
+                ((BeanClassLoaderAware) bean).setBeanClassLoader(getBeanClassLoader());
+            }
+            if (bean instanceof BeanNameAware) {
+                ((BeanNameAware) bean).setBeanName(beanName);
+            }
+        }
         Object wrappedBean = applyBeanPostProcessorsBeforeInitialization(bean, beanName);
         try {
             invokeInitMethods(beanName, wrappedBean, beanDefinition);
@@ -97,7 +108,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
         }
 
         String initMethodName = beanDefinition.getInitMethodName();
-        if (StrUtil.isNotEmpty(initMethodName) && !(bean instanceof InitializingBean)) {
+        if (StrUtil.isNotEmpty(initMethodName)) {
             Method initMethod = beanDefinition.getBeanClass().getMethod(initMethodName);
             if (null == initMethod) {
                 throw new BeansException("Could not find an init method named '" + initMethodName + "' on bean with name '" + beanName + "'");
