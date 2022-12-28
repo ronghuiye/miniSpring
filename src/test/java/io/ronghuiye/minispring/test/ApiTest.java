@@ -1,35 +1,40 @@
 package io.ronghuiye.minispring.test;
 
-import io.ronghuiye.minispring.beans.PropertyValue;
-import io.ronghuiye.minispring.beans.PropertyValues;
-import io.ronghuiye.minispring.beans.factory.config.BeanDefinition;
-import io.ronghuiye.minispring.beans.factory.config.BeanReference;
 import io.ronghuiye.minispring.beans.factory.support.DefaultListableBeanFactory;
-import io.ronghuiye.minispring.test.bean.UserDao;
+import io.ronghuiye.minispring.beans.factory.xml.XmlBeanDefinitionReader;
+import io.ronghuiye.minispring.context.support.ClassPathXmlApplicationContext;
 import io.ronghuiye.minispring.test.bean.UserService;
-import net.sf.cglib.proxy.Enhancer;
-import net.sf.cglib.proxy.NoOp;
+import io.ronghuiye.minispring.test.common.MyBeanFactoryPostProcessor;
+import io.ronghuiye.minispring.test.common.MyBeanPostProcessor;
 import org.junit.Test;
-
-import java.lang.reflect.Constructor;
 
 public class ApiTest {
     //need to add vm arg(--add-opens java.base/java.lang=ALL-UNNAMED) in java18
     @Test
-    public void test_BeanFactory() {
+    public void test_BeanFactoryPostProcessorAndBeanPostProcessor() {
         DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
 
-        beanFactory.registerBeanDefinition("userDao", new BeanDefinition(UserDao.class));
+        XmlBeanDefinitionReader reader = new XmlBeanDefinitionReader(beanFactory);
+        reader.loadBeanDefinitions("classpath:spring.xml");
 
-        PropertyValues propertyValues = new PropertyValues();
-        propertyValues.addPropertyValue(new PropertyValue("uId", "10001"));
-        propertyValues.addPropertyValue(new PropertyValue("userDao", new BeanReference("userDao")));
+        MyBeanFactoryPostProcessor beanFactoryPostProcessor = new MyBeanFactoryPostProcessor();
+        beanFactoryPostProcessor.postProcessBeanFactory(beanFactory);
 
-        BeanDefinition beanDefinition = new BeanDefinition(UserService.class, propertyValues);
-        beanFactory.registerBeanDefinition("userService", beanDefinition);
+        MyBeanPostProcessor beanPostProcessor = new MyBeanPostProcessor();
+        beanFactory.addBeanPostProcessor(beanPostProcessor);
 
-        UserService userService = (UserService) beanFactory.getBean("userService");
-        userService.queryUserInfo();
-
+        UserService userService = beanFactory.getBean("userService", UserService.class);
+        String result = userService.queryUserInfo();
+        System.out.println("result: " + result);
     }
+
+    @Test
+    public void test_xml() {
+        ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:springPostProcessor.xml");
+
+        UserService userService = applicationContext.getBean("userService", UserService.class);
+        String result = userService.queryUserInfo();
+        System.out.println("result：" + result);
+    }
+
 }
