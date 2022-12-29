@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans>
 
-    <bean class="io.ronghuiye.minispring.test.event.ContextRefreshedEventListener"/>
-    <bean class="io.ronghuiye.minispring.test.event.CustomEventListener"/>
-    <bean class="io.ronghuiye.minispring.test.event.ContextClosedEventListener"/>
+    <bean id="userService" class="io.ronghuiye.minispring.test.bean.UserService">
+        <property name="uId" value="10001"/>
+        <property name="company" value="ag"/>
+        <property name="location" value="miami"/>
+        <property name="userDao" ref="userDao"/>
+    </bean>
+
 </beans>
