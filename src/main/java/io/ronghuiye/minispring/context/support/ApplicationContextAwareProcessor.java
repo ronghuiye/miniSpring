@@ -14,7 +14,7 @@ public class ApplicationContextAwareProcessor implements BeanPostProcessor {
     }
 
     @Override
-    public Object postProcessorsBeforeInitialization(Object existingBean, String beanName) throws BeansException {
+    public Object postProcessBeforeInitialization(Object existingBean, String beanName) throws BeansException {
         if (existingBean instanceof ApplicationContextAware) {
             ((ApplicationContextAware) existingBean).setApplicationContext(applicationContext);
         }
@@ -22,7 +22,7 @@ public class ApplicationContextAwareProcessor implements BeanPostProcessor {
     }
 
     @Override
-    public Object postProcessorsAfterInitialization(Object existingBean, String beanName) throws BeansException {
+    public Object postProcessAfterInitialization(Object existingBean, String beanName) throws BeansException {
         return existingBean;
     }
 }
