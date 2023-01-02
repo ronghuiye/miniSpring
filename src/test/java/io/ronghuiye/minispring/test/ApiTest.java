@@ -1,28 +1,13 @@
 package io.ronghuiye.minispring.test;
 
-import io.ronghuiye.minispring.aop.AdvisedSupport;
-import io.ronghuiye.minispring.aop.ClassFilter;
-import io.ronghuiye.minispring.aop.MethodMatcher;
-import io.ronghuiye.minispring.aop.TargetSource;
-import io.ronghuiye.minispring.aop.aspectj.AspectJExpressionPointcut;
-import io.ronghuiye.minispring.aop.aspectj.AspectJExpressionPointcutAdvisor;
-import io.ronghuiye.minispring.aop.framework.Cglib2AopProxy;
-import io.ronghuiye.minispring.aop.framework.JdkDynamicAopProxy;
-import io.ronghuiye.minispring.aop.framework.ProxyFactory;
-import io.ronghuiye.minispring.aop.framework.ReflectiveMethodInvocation;
-import io.ronghuiye.minispring.aop.framework.adapter.MethodBeforeAdviceInterceptor;
+import io.ronghuiye.minispring.beans.BeansException;
+import io.ronghuiye.minispring.beans.factory.config.BeanPostProcessor;
 import io.ronghuiye.minispring.context.support.ClassPathXmlApplicationContext;
 import io.ronghuiye.minispring.test.bean.IUserService;
-import io.ronghuiye.minispring.test.bean.UserService;
-import io.ronghuiye.minispring.test.bean.UserServiceBeforeAdvice;
-import io.ronghuiye.minispring.test.bean.UserServiceInterceptor;
-import org.aopalliance.intercept.MethodInterceptor;
-import org.junit.Before;
 import org.junit.Test;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ApiTest {
     //need to add vm arg(--add-opens java.base/java.lang=ALL-UNNAMED) in java18
@@ -44,65 +29,65 @@ public class ApiTest {
 //        System.out.println("result: " + result);
 //    }
 
-    private AdvisedSupport advisedSupport;
-
-    @Before
-    public void init() {
-        IUserService userService = new UserService();
-        advisedSupport = new AdvisedSupport();
-        advisedSupport.setTargetSource(new TargetSource(userService));
-        advisedSupport.setMethodInterceptor(new UserServiceInterceptor());
-        advisedSupport.setMethodMatcher(new AspectJExpressionPointcut("execution(* io.ronghuiye.minispring.test.bean.IUserService.*(..))"));
-    }
-
-    @Test
-    public void test_proxyFactory() {
-        advisedSupport.setProxyTargetClass(false);
-        IUserService proxy = (IUserService) new ProxyFactory(advisedSupport).getProxy();
-
-        System.out.println("result：" + proxy.queryUserInfo());
-    }
-
-    @Test
-    public void test_beforeAdvice() {
-        UserServiceBeforeAdvice beforeAdvice = new UserServiceBeforeAdvice();
-        MethodBeforeAdviceInterceptor interceptor = new MethodBeforeAdviceInterceptor(beforeAdvice);
-        advisedSupport.setMethodInterceptor(interceptor);
-
-        IUserService proxy = (IUserService) new ProxyFactory(advisedSupport).getProxy();
-        System.out.println("result：" + proxy.queryUserInfo());
-    }
-
-    @Test
-    public void test_advisor() {
-        IUserService userService = new UserService();
-
-        AspectJExpressionPointcutAdvisor advisor = new AspectJExpressionPointcutAdvisor();
-        advisor.setExpression("execution(* io.ronghuiye.minispring.test.bean.IUserService.*(..))");
-        advisor.setAdvice(new MethodBeforeAdviceInterceptor(new UserServiceBeforeAdvice()));
-
-        ClassFilter classFilter = advisor.getPointcut().getClassFilter();
-        if (classFilter.matches(userService.getClass())) {
-            AdvisedSupport advisedSupport = new AdvisedSupport();
-
-            TargetSource targetSource = new TargetSource(userService);
-            advisedSupport.setTargetSource(targetSource);
-            advisedSupport.setMethodInterceptor((MethodInterceptor) advisor.getAdvice());
-            advisedSupport.setMethodMatcher(advisor.getPointcut().getMethodMatcher());
-            advisedSupport.setProxyTargetClass(true);
-
-            IUserService proxy = (IUserService) new ProxyFactory(advisedSupport).getProxy();
-            System.out.println("result：" + proxy.queryUserInfo());
-        }
-    }
-
-    @Test
-    public void test_aop() {
-        ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:spring.xml");
-
-        IUserService userService = applicationContext.getBean("userService", IUserService.class);
-        System.out.println("result：" + userService.queryUserInfo());
-    }
+//    private AdvisedSupport advisedSupport;
+//
+//    @Before
+//    public void init() {
+//        IUserService userService = new UserService();
+//        advisedSupport = new AdvisedSupport();
+//        advisedSupport.setTargetSource(new TargetSource(userService));
+//        advisedSupport.setMethodInterceptor(new UserServiceInterceptor());
+//        advisedSupport.setMethodMatcher(new AspectJExpressionPointcut("execution(* io.ronghuiye.minispring.test.bean.IUserService.*(..))"));
+//    }
+//
+//    @Test
+//    public void test_proxyFactory() {
+//        advisedSupport.setProxyTargetClass(false);
+//        IUserService proxy = (IUserService) new ProxyFactory(advisedSupport).getProxy();
+//
+//        System.out.println("result：" + proxy.queryUserInfo());
+//    }
+//
+//    @Test
+//    public void test_beforeAdvice() {
+//        UserServiceBeforeAdvice beforeAdvice = new UserServiceBeforeAdvice();
+//        MethodBeforeAdviceInterceptor interceptor = new MethodBeforeAdviceInterceptor(beforeAdvice);
+//        advisedSupport.setMethodInterceptor(interceptor);
+//
+//        IUserService proxy = (IUserService) new ProxyFactory(advisedSupport).getProxy();
+//        System.out.println("result：" + proxy.queryUserInfo());
+//    }
+//
+//    @Test
+//    public void test_advisor() {
+//        IUserService userService = new UserService();
+//
+//        AspectJExpressionPointcutAdvisor advisor = new AspectJExpressionPointcutAdvisor();
+//        advisor.setExpression("execution(* io.ronghuiye.minispring.test.bean.IUserService.*(..))");
+//        advisor.setAdvice(new MethodBeforeAdviceInterceptor(new UserServiceBeforeAdvice()));
+//
+//        ClassFilter classFilter = advisor.getPointcut().getClassFilter();
+//        if (classFilter.matches(userService.getClass())) {
+//            AdvisedSupport advisedSupport = new AdvisedSupport();
+//
+//            TargetSource targetSource = new TargetSource(userService);
+//            advisedSupport.setTargetSource(targetSource);
+//            advisedSupport.setMethodInterceptor((MethodInterceptor) advisor.getAdvice());
+//            advisedSupport.setMethodMatcher(advisor.getPointcut().getMethodMatcher());
+//            advisedSupport.setProxyTargetClass(true);
+//
+//            IUserService proxy = (IUserService) new ProxyFactory(advisedSupport).getProxy();
+//            System.out.println("result：" + proxy.queryUserInfo());
+//        }
+//    }
+//
+//    @Test
+//    public void test_aop() {
+//        ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:spring.xml");
+//
+//        IUserService userService = applicationContext.getBean("userService", IUserService.class);
+//        System.out.println("result：" + userService.queryUserInfo());
+//    }
 
 //    @Test
 //    public void test_dynamic() {
@@ -127,36 +112,73 @@ public class ApiTest {
 //
 //    }
 
-    @Test
-    public void test_proxy_method() {
-        Object targetObj = new UserService();
+//    @Test
+//    public void test_proxy_method() {
+//        Object targetObj = new UserService();
+//
+//        IUserService proxy = (IUserService) Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(), targetObj.getClass().getInterfaces(), new InvocationHandler() {
+//            MethodMatcher methodMatcher = new AspectJExpressionPointcut("execution(* io.ronghuiye.minispring.test.bean.IUserService.*(..))");
+//
+//            @Override
+//            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+//                if (methodMatcher.matches(method, targetObj.getClass())) {
+//                    MethodInterceptor methodInterceptor = invocation -> {
+//                        long start = System.currentTimeMillis();
+//                        try {
+//                            return invocation.proceed();
+//                        } finally {
+//                            System.out.println("Begin By AOP");
+//                            System.out.println("method：" + invocation.getMethod().getName());
+//                            System.out.println("took：" + (System.currentTimeMillis() - start) + "ms");
+//                            System.out.println("End\r\n");
+//                        }
+//                    };
+//                    return methodInterceptor.invoke(new ReflectiveMethodInvocation(targetObj, method, args));
+//                }
+//                return method.invoke(targetObj, args);
+//            }
+//        });
+//
+//        String result = proxy.queryUserInfo();
+//        System.out.println("result：" + result);
+//
+//    }
 
-        IUserService proxy = (IUserService) Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(), targetObj.getClass().getInterfaces(), new InvocationHandler() {
-            MethodMatcher methodMatcher = new AspectJExpressionPointcut("execution(* io.ronghuiye.minispring.test.bean.IUserService.*(..))");
+    @Test
+    public void test_scan() {
+        ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:spring-scan.xml");
+        IUserService userService = applicationContext.getBean("userService", IUserService.class);
+        System.out.println("result：" + userService.queryUserInfo());
+    }
+
+    @Test
+    public void test_property() {
+        ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:spring-property.xml");
+        IUserService userService = applicationContext.getBean("userService", IUserService.class);
+        System.out.println("result：" + userService);
+    }
+
+    @Test
+    public void test_beanPost(){
+
+        BeanPostProcessor beanPostProcessor = new BeanPostProcessor() {
+            @Override
+            public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+                return null;
+            }
 
             @Override
-            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                if (methodMatcher.matches(method, targetObj.getClass())) {
-                    MethodInterceptor methodInterceptor = invocation -> {
-                        long start = System.currentTimeMillis();
-                        try {
-                            return invocation.proceed();
-                        } finally {
-                            System.out.println("Begin By AOP");
-                            System.out.println("method：" + invocation.getMethod().getName());
-                            System.out.println("took：" + (System.currentTimeMillis() - start) + "ms");
-                            System.out.println("End\r\n");
-                        }
-                    };
-                    return methodInterceptor.invoke(new ReflectiveMethodInvocation(targetObj, method, args));
-                }
-                return method.invoke(targetObj, args);
+            public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+                return null;
             }
-        });
+        };
 
-        String result = proxy.queryUserInfo();
-        System.out.println("result：" + result);
+        List<BeanPostProcessor> beanPostProcessors = new ArrayList<BeanPostProcessor>();
+        beanPostProcessors.add(beanPostProcessor);
+        beanPostProcessors.add(beanPostProcessor);
+        beanPostProcessors.remove(beanPostProcessor);
 
+        System.out.println(beanPostProcessors.size());
     }
 
 }

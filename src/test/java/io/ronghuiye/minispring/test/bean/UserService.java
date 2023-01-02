@@ -1,8 +1,14 @@
 package io.ronghuiye.minispring.test.bean;
 
+import io.ronghuiye.minispring.stereotype.Component;
+
 import java.util.Random;
 
+@Component
 public class UserService implements IUserService {
+
+    private String token;
+
     @Override
     public String queryUserInfo() {
         try {
@@ -23,5 +29,18 @@ public class UserService implements IUserService {
         }
 
         return "registered: " + userName;
+    }
+
+    @Override
+    public String toString() {
+        return "UserService#token = { " + token + " }";
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
     }
 }
