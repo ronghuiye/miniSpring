@@ -1,6 +1,7 @@
 package io.ronghuiye.minispring.beans.factory.config;
 
 import io.ronghuiye.minispring.beans.factory.HierarchicalBeanFactory;
+import io.ronghuiye.minispring.util.StringValueResolver;
 
 public interface ConfigurableBeanFactory extends HierarchicalBeanFactory, SingletonBeanRegistry {
 
@@ -11,4 +12,8 @@ public interface ConfigurableBeanFactory extends HierarchicalBeanFactory, Single
     void addBeanPostProcessor(BeanPostProcessor beanPostProcessor);
 
     void destroySingletons();
+
+    void addEmbeddedValueResolver(StringValueResolver valueResolver);
+
+    String resolveEmbeddedValue(String value);
 }

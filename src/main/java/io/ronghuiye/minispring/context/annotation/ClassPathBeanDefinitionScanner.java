@@ -1,6 +1,7 @@
 package io.ronghuiye.minispring.context.annotation;
 
 import cn.hutool.core.util.StrUtil;
+import io.ronghuiye.minispring.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
 import io.ronghuiye.minispring.beans.factory.config.BeanDefinition;
 import io.ronghuiye.minispring.beans.factory.support.BeanDefinitionRegistry;
 import io.ronghuiye.minispring.stereotype.Component;
@@ -25,6 +26,8 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
                 registry.registerBeanDefinition(determineBeanName(beanDefinition), beanDefinition);
             }
         }
+        registry.registerBeanDefinition("io.ronghuiye.minispring.context.annotation.internalAutowiredAnnotationProcessor", new BeanDefinition(AutowiredAnnotationBeanPostProcessor.class));
+
     }
 
     private String resolveBeanScope(BeanDefinition beanDefinition) {
