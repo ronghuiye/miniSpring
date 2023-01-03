@@ -6,10 +6,20 @@
 	         http://www.springframework.org/schema/beans/spring-beans.xsd
 		 http://www.springframework.org/schema/context">
 
-    <bean class="io.ronghuiye.minispring.beans.factory.PropertyPlaceholderConfigurer">
-        <property name="location" value="classpath:token.properties"/>
+    <bean id="userService" class="io.ronghuiye.minispring.test.bean.UserService">
+        <property name="token" value="RejDlI78hu223Opo983Ds"/>
     </bean>
 
-    <context:component-scan base-package="io.ronghuiye.minispring.test.bean"/>
+    <bean class="io.ronghuiye.minispring.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator"/>
 
+    <bean id="beforeAdvice" class="io.ronghuiye.minispring.test.bean.UserServiceBeforeAdvice"/>
+
+    <bean id="methodInterceptor" class="io.ronghuiye.minispring.aop.framework.adapter.MethodBeforeAdviceInterceptor">
+        <property name="advice" ref="beforeAdvice"/>
+    </bean>
+
+    <bean id="pointcutAdvisor" class="io.ronghuiye.minispring.aop.aspectj.AspectJExpressionPointcutAdvisor">
+        <property name="expression" value="execution(* io.ronghuiye.minispring.test.bean.IUserService.*(..))"/>
+        <property name="advice" ref="methodInterceptor"/>
+    </bean>
 </beans>

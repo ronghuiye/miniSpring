@@ -24,33 +24,37 @@ public class DefaultAdvisorAutoProxyCreator implements InstantiationAwareBeanPos
     }
 
     @Override
+    public Object postProcessBeforeInstantiation(Class<?> beanClass, String beanName) throws BeansException {
+        return null;
+    }
+
+    @Override
+    public boolean postProcessAfterInstantiation(Object bean, String beanName) throws BeansException {
+        return true;
+    }
+
+    private boolean isInfrastructureClass(Class<?> beanClass) {
+        return Advice.class.isAssignableFrom(beanClass) || Pointcut.class.isAssignableFrom(beanClass) || Advisor.class.isAssignableFrom(beanClass);
+    }
+
+    @Override
     public Object postProcessBeforeInitialization(Object existingBean, String beanName) throws BeansException {
         return existingBean;
     }
 
     @Override
     public Object postProcessAfterInitialization(Object existingBean, String beanName) throws BeansException {
-        return existingBean;
-    }
-
-    @Override
-    public Object postProcessBeforeInstantiation(Class<?> beanClass, String beanName) throws BeansException {
-        if (isInfrastructureClass(beanClass)) return null;
+        if (isInfrastructureClass(existingBean.getClass())) return existingBean;
 
         Collection<AspectJExpressionPointcutAdvisor> advisors = beanFactory.getBeansOfType(AspectJExpressionPointcutAdvisor.class).values();
 
         for (AspectJExpressionPointcutAdvisor advisor : advisors) {
             ClassFilter classFilter = advisor.getPointcut().getClassFilter();
-            if(!classFilter.matches(beanClass)) continue;
+            if(!classFilter.matches(existingBean.getClass())) continue;
 
             AdvisedSupport advisedSupport = new AdvisedSupport();
 
-            TargetSource targetSource = null;
-            try {
-                targetSource = new TargetSource(beanClass.getDeclaredConstructor().newInstance());
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            TargetSource targetSource = new TargetSource(existingBean);
             advisedSupport.setTargetSource(targetSource);
             advisedSupport.setMethodInterceptor((MethodInterceptor) advisor.getAdvice());
             advisedSupport.setMethodMatcher(advisor.getPointcut().getMethodMatcher());
@@ -58,12 +62,7 @@ public class DefaultAdvisorAutoProxyCreator implements InstantiationAwareBeanPos
 
             return new ProxyFactory(advisedSupport).getProxy();
         }
-
-        return null;
-    }
-
-    private boolean isInfrastructureClass(Class<?> beanClass) {
-        return Advice.class.isAssignableFrom(beanClass) || Pointcut.class.isAssignableFrom(beanClass) || Advisor.class.isAssignableFrom(beanClass);
+        return existingBean;
     }
 
     @Override

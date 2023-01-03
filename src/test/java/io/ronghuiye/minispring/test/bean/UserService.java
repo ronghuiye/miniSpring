@@ -6,14 +6,9 @@ import io.ronghuiye.minispring.stereotype.Component;
 
 import java.util.Random;
 
-@Component
 public class UserService implements IUserService {
 
-    @Value("${token}")
     private String token;
-
-    @Autowired
-    private UserDao userDao;
 
     @Override
     public String queryUserInfo() {
@@ -23,7 +18,7 @@ public class UserService implements IUserService {
             e.printStackTrace();
         }
 
-        return userDao.queryUserName("10001") + ", " + token;
+        return "ryan, 10001, boston, " + token;
     }
 
     @Override
@@ -37,11 +32,6 @@ public class UserService implements IUserService {
         return "registered: " + userName;
     }
 
-    @Override
-    public String toString() {
-        return "UserService#token = { " + token + " }";
-    }
-
     public String getToken() {
         return token;
     }
@@ -50,11 +40,4 @@ public class UserService implements IUserService {
         this.token = token;
     }
 
-    public UserDao getUserDao() {
-        return userDao;
-    }
-
-    public void setUserDao(UserDao userDao) {
-        this.userDao = userDao;
-    }
 }
