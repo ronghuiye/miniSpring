@@ -3,7 +3,9 @@ package io.ronghuiye.minispring.test;
 import io.ronghuiye.minispring.beans.BeansException;
 import io.ronghuiye.minispring.beans.factory.config.BeanPostProcessor;
 import io.ronghuiye.minispring.context.support.ClassPathXmlApplicationContext;
+import io.ronghuiye.minispring.test.bean.Husband;
 import io.ronghuiye.minispring.test.bean.IUserService;
+import io.ronghuiye.minispring.test.bean.Wife;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -144,12 +146,12 @@ public class ApiTest {
 //
 //    }
 
-    @Test
-    public void test_autoProxy() {
-        ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:spring.xml");
-        IUserService userService = applicationContext.getBean("userService", IUserService.class);
-        System.out.println("result：" + userService.queryUserInfo());
-    }
+//    @Test
+//    public void test_autoProxy() {
+//        ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:spring.xml");
+//        IUserService userService = applicationContext.getBean("userService", IUserService.class);
+//        System.out.println("result：" + userService.queryUserInfo());
+//    }
 
 //    @Test
 //    public void test_property() {
@@ -181,4 +183,13 @@ public class ApiTest {
 //        System.out.println(beanPostProcessors.size());
 //    }
 
+    @Test
+    public void test_circular() {
+        ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:spring.xml");
+
+        Husband husband = applicationContext.getBean("husband", Husband.class);
+        Wife wife = applicationContext.getBean("wife", Wife.class);
+        System.out.println("husband's wife：" + husband.queryWife());
+        System.out.println("wife's husband：" + wife.queryHusband());
+    }
 }
