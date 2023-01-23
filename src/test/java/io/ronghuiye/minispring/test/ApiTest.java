@@ -1,15 +1,11 @@
 package io.ronghuiye.minispring.test;
 
-import io.ronghuiye.minispring.beans.BeansException;
-import io.ronghuiye.minispring.beans.factory.config.BeanPostProcessor;
 import io.ronghuiye.minispring.context.support.ClassPathXmlApplicationContext;
+import io.ronghuiye.minispring.core.convert.converter.Converter;
+import io.ronghuiye.minispring.core.convert.support.StringToNumberConverterFactory;
 import io.ronghuiye.minispring.test.bean.Husband;
-import io.ronghuiye.minispring.test.bean.IUserService;
-import io.ronghuiye.minispring.test.bean.Wife;
+import io.ronghuiye.minispring.test.converter.StringToIntegerConverter;
 import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class ApiTest {
     //need to add vm arg(--add-opens java.base/java.lang=ALL-UNNAMED) in java18
@@ -184,12 +180,28 @@ public class ApiTest {
 //    }
 
     @Test
-    public void test_circular() {
+    public void test_convert() {
         ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:spring.xml");
-
         Husband husband = applicationContext.getBean("husband", Husband.class);
-        Wife wife = applicationContext.getBean("wife", Wife.class);
-        System.out.println("husband's wife：" + husband.queryWife());
-        System.out.println("wife's husband：" + wife.queryHusband());
+        System.out.println("result：" + husband);
     }
+
+    @Test
+    public void test_StringToIntegerConverter() {
+        StringToIntegerConverter converter = new StringToIntegerConverter();
+        Integer num = converter.convert("1234");
+        System.out.println("result：" + num);
+    }
+
+    @Test
+    public void test_StringToNumberConverterFactory() {
+        StringToNumberConverterFactory converterFactory = new StringToNumberConverterFactory();
+
+        Converter<String, Integer> stringToIntegerConverter = converterFactory.getConverter(Integer.class);
+        System.out.println("result：" + stringToIntegerConverter.convert("1234"));
+
+        Converter<String, Long> stringToLongConverter = converterFactory.getConverter(Long.class);
+        System.out.println("result：" + stringToLongConverter.convert("1234"));
+    }
+
 }

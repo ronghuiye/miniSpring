@@ -7,26 +7,13 @@
 		 http://www.springframework.org/schema/context">
 
     <bean id="husband" class="io.ronghuiye.minispring.test.bean.Husband">
-        <property name="wife" ref="wife"/>
+        <property name="wifiName" value="guess" />
+        <property name="marriageDate" value="2021-08-08" />
     </bean>
 
-    <bean id="wife" class="io.ronghuiye.minispring.test.bean.Wife">
-        <property name="husband" ref="husband"/>
-        <property name="mother" ref="husbandMother"/>
+    <bean id="conversionService" class="io.ronghuiye.minispring.context.support.ConversionServiceFactoryBean">
+        <property name="converters" ref="converters"/>
     </bean>
 
-    <bean id="husbandMother" class="io.ronghuiye.minispring.test.bean.HusbandMother"/>
-
-    <bean class="io.ronghuiye.minispring.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator"/>
-
-    <bean id="beforeAdvice" class="io.ronghuiye.minispring.test.bean.SpouseAdvice"/>
-
-    <bean id="methodInterceptor" class="io.ronghuiye.minispring.aop.framework.adapter.MethodBeforeAdviceInterceptor">
-        <property name="advice" ref="beforeAdvice"/>
-    </bean>
-
-    <bean id="pointcutAdvisor" class="io.ronghuiye.minispring.aop.aspectj.AspectJExpressionPointcutAdvisor">
-        <property name="expression" value="execution(* io.ronghuiye.minispring.test.bean.Wife.*(..))"/>
-        <property name="advice" ref="methodInterceptor"/>
-    </bean>
+    <bean id="converters" class="io.ronghuiye.minispring.test.converter.ConvertersFactoryBean"/>
 </beans>

@@ -2,11 +2,13 @@ package io.ronghuiye.minispring.beans.factory.support;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.core.util.TypeUtil;
 import io.ronghuiye.minispring.beans.BeansException;
 import io.ronghuiye.minispring.beans.PropertyValue;
 import io.ronghuiye.minispring.beans.PropertyValues;
 import io.ronghuiye.minispring.beans.factory.*;
 import io.ronghuiye.minispring.beans.factory.config.*;
+import io.ronghuiye.minispring.core.convert.ConversionService;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -144,6 +146,15 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
                 if (value instanceof BeanReference) {
                     BeanReference beanReference = (BeanReference) value;
                     value = getBean(beanReference.getBeanName());
+                } else {
+                    Class<?> sourceType = value.getClass();
+                    Class<?> targetType = (Class<?>) TypeUtil.getFieldType(bean.getClass(), name);
+                    ConversionService conversionService = getConversionService();
+                    if (conversionService != null) {
+                        if (conversionService.canConvert(sourceType, targetType)) {
+                            value = conversionService.convert(value, targetType);
+                        }
+                    }
                 }
                 BeanUtil.setFieldValue(bean, name, value);
             }

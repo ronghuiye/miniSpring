@@ -5,6 +5,7 @@ import io.ronghuiye.minispring.beans.factory.FactoryBean;
 import io.ronghuiye.minispring.beans.factory.config.BeanDefinition;
 import io.ronghuiye.minispring.beans.factory.config.BeanPostProcessor;
 import io.ronghuiye.minispring.beans.factory.config.ConfigurableBeanFactory;
+import io.ronghuiye.minispring.core.convert.ConversionService;
 import io.ronghuiye.minispring.util.ClassUtils;
 import io.ronghuiye.minispring.util.StringValueResolver;
 
@@ -18,6 +19,8 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
     private final List<BeanPostProcessor> beanPostProcessors = new ArrayList<>();
 
     private final List<StringValueResolver> embeddedValueResolvers = new ArrayList<>();
+
+    private ConversionService conversionService;
 
     @Override
     public Object getBean(String name) throws BeansException {
@@ -47,6 +50,13 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
     public <T> T getBean(String name, Class<T> requiredType) throws BeansException {
         return (T) getBean(name);
     }
+
+    @Override
+    public boolean containsBean(String name) {
+        return containsBeanDefinition(name);
+    }
+
+    protected abstract boolean containsBeanDefinition(String beanName);
 
     protected <T> T doGetBean(final String name, final Object[] args) {
         Object sharedInstance = getSingleton(name);
@@ -82,6 +92,16 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
     public void addBeanPostProcessor(BeanPostProcessor beanPostProcessor) {
         this.beanPostProcessors.remove(beanPostProcessor);
         this.beanPostProcessors.add(beanPostProcessor);
+    }
+
+    @Override
+    public void setConversionService(ConversionService conversionService) {
+        this.conversionService = conversionService;
+    }
+
+    @Override
+    public ConversionService getConversionService() {
+        return conversionService;
     }
 
     public List<BeanPostProcessor> getBeanPostProcessors() {

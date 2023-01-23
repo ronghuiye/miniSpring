@@ -1,12 +1,14 @@
 package io.ronghuiye.minispring.beans.factory.annotation;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.util.TypeUtil;
 import io.ronghuiye.minispring.beans.BeansException;
 import io.ronghuiye.minispring.beans.PropertyValues;
 import io.ronghuiye.minispring.beans.factory.BeanFactory;
 import io.ronghuiye.minispring.beans.factory.BeanFactoryAware;
 import io.ronghuiye.minispring.beans.factory.ConfigurableListableBeanFactory;
 import io.ronghuiye.minispring.beans.factory.config.InstantiationAwareBeanPostProcessor;
+import io.ronghuiye.minispring.core.convert.ConversionService;
 import io.ronghuiye.minispring.util.ClassUtils;
 
 import java.lang.reflect.Field;
@@ -50,8 +52,17 @@ public class AutowiredAnnotationBeanPostProcessor implements InstantiationAwareB
         for (Field field : declaredFields) {
             Value valueAnnotation = field.getAnnotation(Value.class);
             if (null != valueAnnotation) {
-                String value = valueAnnotation.value();
-                value = beanFactory.resolveEmbeddedValue(value);
+                Object value = valueAnnotation.value();
+                value = beanFactory.resolveEmbeddedValue((String) value);
+
+                Class<?> sourceType = value.getClass();
+                Class<?> targetType = (Class<?>) TypeUtil.getType(field);
+                ConversionService conversionService = beanFactory.getConversionService();
+                if (conversionService != null) {
+                    if (conversionService.canConvert(sourceType, targetType)) {
+                        value = conversionService.convert(value, targetType);
+                    }
+                }
                 BeanUtil.setFieldValue(bean, field.getName(), value);
             }
         }

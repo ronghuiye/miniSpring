@@ -1,7 +1,9 @@
 package io.ronghuiye.minispring.beans.factory.config;
 
 import io.ronghuiye.minispring.beans.factory.HierarchicalBeanFactory;
+import io.ronghuiye.minispring.core.convert.ConversionService;
 import io.ronghuiye.minispring.util.StringValueResolver;
+
 
 public interface ConfigurableBeanFactory extends HierarchicalBeanFactory, SingletonBeanRegistry {
 
@@ -16,4 +18,8 @@ public interface ConfigurableBeanFactory extends HierarchicalBeanFactory, Single
     void addEmbeddedValueResolver(StringValueResolver valueResolver);
 
     String resolveEmbeddedValue(String value);
+
+    void setConversionService(ConversionService conversionService);
+
+    ConversionService getConversionService();
 }

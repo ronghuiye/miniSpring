@@ -13,6 +13,7 @@ import io.ronghuiye.minispring.context.event.ApplicationEventMulticaster;
 import io.ronghuiye.minispring.context.event.ContextClosedEvent;
 import io.ronghuiye.minispring.context.event.ContextRefreshedEvent;
 import io.ronghuiye.minispring.context.event.SimpleApplicationEventMulticaster;
+import io.ronghuiye.minispring.core.convert.ConversionService;
 import io.ronghuiye.minispring.core.io.DefaultResourceLoader;
 import io.ronghuiye.minispring.core.io.ResourceLoader;
 
@@ -41,9 +42,20 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader i
 
         registerListeners();
 
-        beanFactory.preInstantiateSingletons();
+        finishBeanFactoryInitialization(beanFactory);
 
         finishRefresh();
+    }
+
+    protected void finishBeanFactoryInitialization(ConfigurableListableBeanFactory beanFactory) {
+        if (beanFactory.containsBean("conversionService")) {
+            Object conversionService = beanFactory.getBean("conversionService");
+            if (conversionService instanceof ConversionService) {
+                beanFactory.setConversionService((ConversionService) conversionService);
+            }
+        }
+
+        beanFactory.preInstantiateSingletons();
     }
 
     protected abstract void refreshBeanFactory() throws BeansException;
@@ -111,6 +123,10 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader i
         return getBeanFactory().getBeanDefinitionNames();
     }
 
+    @Override
+    public boolean containsBean(String name) {
+        return getBeanFactory().containsBean(name);
+    }
     @Override
     public void registerShutdownHook() {
         Runtime.getRuntime().addShutdownHook(new Thread(this::close));
