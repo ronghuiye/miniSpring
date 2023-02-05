@@ -1,207 +1,92 @@
 package io.ronghuiye.minispring.test;
 
 import io.ronghuiye.minispring.context.support.ClassPathXmlApplicationContext;
-import io.ronghuiye.minispring.core.convert.converter.Converter;
-import io.ronghuiye.minispring.core.convert.support.StringToNumberConverterFactory;
-import io.ronghuiye.minispring.test.bean.Husband;
-import io.ronghuiye.minispring.test.converter.StringToIntegerConverter;
+import io.ronghuiye.minispring.jdbc.support.JdbcTemplate;
+import org.junit.Before;
 import org.junit.Test;
+
+import java.util.List;
+import java.util.Map;
 
 public class ApiTest {
     //need to add vm arg(--add-opens java.base/java.lang=ALL-UNNAMED) in java18
-//    @Test
-//    public void test_BeanFactoryPostProcessorAndBeanPostProcessor() {
-//        DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
-//
-//        XmlBeanDefinitionReader reader = new XmlBeanDefinitionReader(beanFactory);
-//        reader.loadBeanDefinitions("classpath:spring.xml");
-//
-//        MyBeanFactoryPostProcessor beanFactoryPostProcessor = new MyBeanFactoryPostProcessor();
-//        beanFactoryPostProcessor.postProcessBeanFactory(beanFactory);
-//
-//        MyBeanPostProcessor beanPostProcessor = new MyBeanPostProcessor();
-//        beanFactory.addBeanPostProcessor(beanPostProcessor);
-//
-//        UserService userService = beanFactory.getBean("userService", UserService.class);
-//        String result = userService.queryUserInfo();
-//        System.out.println("result: " + result);
-//    }
+    private JdbcTemplate jdbcTemplate;
 
-//    private AdvisedSupport advisedSupport;
-//
-//    @Before
-//    public void init() {
-//        IUserService userService = new UserService();
-//        advisedSupport = new AdvisedSupport();
-//        advisedSupport.setTargetSource(new TargetSource(userService));
-//        advisedSupport.setMethodInterceptor(new UserServiceInterceptor());
-//        advisedSupport.setMethodMatcher(new AspectJExpressionPointcut("execution(* io.ronghuiye.minispring.test.bean.IUserService.*(..))"));
-//    }
-//
-//    @Test
-//    public void test_proxyFactory() {
-//        advisedSupport.setProxyTargetClass(false);
-//        IUserService proxy = (IUserService) new ProxyFactory(advisedSupport).getProxy();
-//
-//        System.out.println("result：" + proxy.queryUserInfo());
-//    }
-//
-//    @Test
-//    public void test_beforeAdvice() {
-//        UserServiceBeforeAdvice beforeAdvice = new UserServiceBeforeAdvice();
-//        MethodBeforeAdviceInterceptor interceptor = new MethodBeforeAdviceInterceptor(beforeAdvice);
-//        advisedSupport.setMethodInterceptor(interceptor);
-//
-//        IUserService proxy = (IUserService) new ProxyFactory(advisedSupport).getProxy();
-//        System.out.println("result：" + proxy.queryUserInfo());
-//    }
-//
-//    @Test
-//    public void test_advisor() {
-//        IUserService userService = new UserService();
-//
-//        AspectJExpressionPointcutAdvisor advisor = new AspectJExpressionPointcutAdvisor();
-//        advisor.setExpression("execution(* io.ronghuiye.minispring.test.bean.IUserService.*(..))");
-//        advisor.setAdvice(new MethodBeforeAdviceInterceptor(new UserServiceBeforeAdvice()));
-//
-//        ClassFilter classFilter = advisor.getPointcut().getClassFilter();
-//        if (classFilter.matches(userService.getClass())) {
-//            AdvisedSupport advisedSupport = new AdvisedSupport();
-//
-//            TargetSource targetSource = new TargetSource(userService);
-//            advisedSupport.setTargetSource(targetSource);
-//            advisedSupport.setMethodInterceptor((MethodInterceptor) advisor.getAdvice());
-//            advisedSupport.setMethodMatcher(advisor.getPointcut().getMethodMatcher());
-//            advisedSupport.setProxyTargetClass(true);
-//
-//            IUserService proxy = (IUserService) new ProxyFactory(advisedSupport).getProxy();
-//            System.out.println("result：" + proxy.queryUserInfo());
-//        }
-//    }
-//
-//    @Test
-//    public void test_aop() {
-//        ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:spring.xml");
-//
-//        IUserService userService = applicationContext.getBean("userService", IUserService.class);
-//        System.out.println("result：" + userService.queryUserInfo());
-//    }
-
-//    @Test
-//    public void test_dynamic() {
-//        IUserService userService = new UserService();
-//        AdvisedSupport advisedSupport = new AdvisedSupport();
-//        advisedSupport.setTargetSource(new TargetSource(userService));
-//        advisedSupport.setMethodInterceptor(new UserServiceInterceptor());
-//        advisedSupport.setMethodMatcher(new AspectJExpressionPointcut("execution(* io.ronghuiye.minispring.test.bean.IUserService.*(..))"));
-//
-//        IUserService proxy_jdk = (IUserService) new JdkDynamicAopProxy(advisedSupport).getProxy();
-//        System.out.println("result：" + proxy_jdk.queryUserInfo());
-//
-//        IUserService proxy_cglib = (IUserService) new Cglib2AopProxy(advisedSupport).getProxy();
-//        System.out.println("result：" + proxy_cglib.register("huahua"));
-//    }
-//
-//    @Test
-//    public void test_proxy_class() {
-//        IUserService userService = (IUserService) Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(), new Class[]{IUserService.class}, (proxy, method, args) -> "proxied！");
-//        String result = userService.queryUserInfo();
-//        System.out.println("result：" + result);
-//
-//    }
-
-//    @Test
-//    public void test_proxy_method() {
-//        Object targetObj = new UserService();
-//
-//        IUserService proxy = (IUserService) Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(), targetObj.getClass().getInterfaces(), new InvocationHandler() {
-//            MethodMatcher methodMatcher = new AspectJExpressionPointcut("execution(* io.ronghuiye.minispring.test.bean.IUserService.*(..))");
-//
-//            @Override
-//            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-//                if (methodMatcher.matches(method, targetObj.getClass())) {
-//                    MethodInterceptor methodInterceptor = invocation -> {
-//                        long start = System.currentTimeMillis();
-//                        try {
-//                            return invocation.proceed();
-//                        } finally {
-//                            System.out.println("Begin By AOP");
-//                            System.out.println("method：" + invocation.getMethod().getName());
-//                            System.out.println("took：" + (System.currentTimeMillis() - start) + "ms");
-//                            System.out.println("End\r\n");
-//                        }
-//                    };
-//                    return methodInterceptor.invoke(new ReflectiveMethodInvocation(targetObj, method, args));
-//                }
-//                return method.invoke(targetObj, args);
-//            }
-//        });
-//
-//        String result = proxy.queryUserInfo();
-//        System.out.println("result：" + result);
-//
-//    }
-
-//    @Test
-//    public void test_autoProxy() {
-//        ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:spring.xml");
-//        IUserService userService = applicationContext.getBean("userService", IUserService.class);
-//        System.out.println("result：" + userService.queryUserInfo());
-//    }
-
-//    @Test
-//    public void test_property() {
-//        ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:spring-property.xml");
-//        IUserService userService = applicationContext.getBean("userService", IUserService.class);
-//        System.out.println("result：" + userService);
-//    }
-//
-//    @Test
-//    public void test_beanPost(){
-//
-//        BeanPostProcessor beanPostProcessor = new BeanPostProcessor() {
-//            @Override
-//            public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-//                return null;
-//            }
-//
-//            @Override
-//            public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-//                return null;
-//            }
-//        };
-//
-//        List<BeanPostProcessor> beanPostProcessors = new ArrayList<BeanPostProcessor>();
-//        beanPostProcessors.add(beanPostProcessor);
-//        beanPostProcessors.add(beanPostProcessor);
-//        beanPostProcessors.remove(beanPostProcessor);
-//
-//        System.out.println(beanPostProcessors.size());
-//    }
-
-    @Test
-    public void test_convert() {
+    @Before
+    public void init() {
         ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:spring.xml");
-        Husband husband = applicationContext.getBean("husband", Husband.class);
-        System.out.println("result：" + husband);
+        jdbcTemplate = applicationContext.getBean(JdbcTemplate.class);
+    }
+
+
+    @Test
+    public void executeSqlTest() {
+
+        jdbcTemplate.execute("        CREATE TABLE `user` (\n" +
+                "  `id` int NOT NULL AUTO_INCREMENT,\n" +
+                "  `username` varchar(100) DEFAULT NULL,\n" +
+                "        PRIMARY KEY (`id`),\n" +
+                "        UNIQUE KEY `user_id_uindex` (`id`)\n" +
+                ") ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci");
+    }
+
+
+    @Test
+    public void queryForListTest() {
+        List<Map<String, Object>> allResult = jdbcTemplate.queryForList("select * from user");
+        for (int i = 0; i < allResult.size(); i++) {
+            System.out.printf("第%d行数据", i + 1);
+            Map<String, Object> objectMap = allResult.get(i);
+            System.out.println(objectMap);
+        }
     }
 
     @Test
-    public void test_StringToIntegerConverter() {
-        StringToIntegerConverter converter = new StringToIntegerConverter();
-        Integer num = converter.convert("1234");
-        System.out.println("result：" + num);
+    public void queryListWithColumnClassTypeTest() {
+        List<String> allResult = jdbcTemplate.queryForList("select username from user", String.class);
+        for (int i = 0; i < allResult.size(); i++) {
+            System.out.printf("第%d行数据", i + 1);
+            String username = allResult.get(i);
+            System.out.println(username);
+        }
     }
 
     @Test
-    public void test_StringToNumberConverterFactory() {
-        StringToNumberConverterFactory converterFactory = new StringToNumberConverterFactory();
+    public void queryListWithColumnClassTypeWithArgTest() {
+        List<String> allResult = jdbcTemplate.queryForList("select username from user where id=?", String.class, 1);
+        for (int i = 0; i < allResult.size(); i++) {
+            System.out.printf("第%d行数据", i + 1);
+            String username = allResult.get(i);
+            System.out.println(username);
+        }
+    }
 
-        Converter<String, Integer> stringToIntegerConverter = converterFactory.getConverter(Integer.class);
-        System.out.println("result：" + stringToIntegerConverter.convert("1234"));
+    @Test
+    public void queryListWithArgTest() {
+        List<Map<String, Object>> allResult = jdbcTemplate.queryForList("select * from user where id=?", 1);
+        for (int i = 0; i < allResult.size(); i++) {
+            System.out.printf("第%d行数据", i + 1);
+            Map<String, Object> row = allResult.get(i);
+            System.out.println(row);
+        }
+    }
 
-        Converter<String, Long> stringToLongConverter = converterFactory.getConverter(Long.class);
-        System.out.println("result：" + stringToLongConverter.convert("1234"));
+    @Test
+    public void queryObjectTest() {
+        String username = jdbcTemplate.queryForObject("select username from user where id=1", String.class);
+        System.out.println(username);
+    }
+
+    @Test
+    public void queryMapTest() {
+        Map<String, Object> row = jdbcTemplate.queryForMap("select * from user where id=1");
+        System.out.println(row);
+    }
+
+    @Test
+    public void queryMapWithArgTest() {
+        Map<String, Object> row = jdbcTemplate.queryForMap("select * from user where id=?", 1);
+        System.out.println(row);
     }
 
 }
