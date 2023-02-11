@@ -1,6 +1,7 @@
 package io.ronghuiye.minispring.jdbc.datasource;
 
 import io.ronghuiye.minispring.jdbc.CannotGetJdbcConnectionException;
+import io.ronghuiye.minispring.tx.transaction.support.TransactionSynchronizationManager;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -17,10 +18,12 @@ public abstract class DataSourceUtils {
     }
 
     public static Connection doGetConnection(DataSource dataSource) throws SQLException {
-        Connection connection = fetchConnection(dataSource);
-        ConnectionHolder holderToUse = new ConnectionHolder(connection);
+        ConnectionHolder conHolder = (ConnectionHolder) TransactionSynchronizationManager.getResource(dataSource);
+        if (null != conHolder && conHolder.hasConnection()) {
+            return conHolder.getConnection();
+        }
 
-        return connection;
+        return fetchConnection(dataSource);
     }
 
     private static Connection fetchConnection(DataSource dataSource) throws SQLException {

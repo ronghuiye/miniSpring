@@ -4,16 +4,36 @@ import com.alibaba.druid.pool.DruidDataSource;
 import com.mysql.cj.jdbc.Driver;
 import io.ronghuiye.minispring.context.support.ClassPathXmlApplicationContext;
 import io.ronghuiye.minispring.jdbc.support.JdbcTemplate;
+import io.ronghuiye.minispring.test.service.JdbcService;
+import io.ronghuiye.minispring.test.service.impl.JdbcServiceImpl;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.lang.reflect.Proxy;
 import java.sql.*;
 import java.util.List;
 import java.util.Map;
 
 public class JdbcTest {
     //need to add vm arg(--add-opens java.base/java.lang=ALL-UNNAMED) in java18
+    /**
+     * CREATE TABLE `user` (
+     * `id` int NOT NULL AUTO_INCREMENT,
+     * `username` varchar(100) DEFAULT NULL,
+     * PRIMARY KEY (`id`),
+     * UNIQUE KEY `user_id_uindex` (`id`)
+     * ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+     * <p>
+     * CREATE TABLE `teacher` (
+     * `id` int NOT NULL AUTO_INCREMENT,
+     * `teacher_name` varchar(50) NOT NULL,
+     * `phone` varchar(20) DEFAULT NULL,
+     * PRIMARY KEY (`id`),
+     * UNIQUE KEY `teacher_id_uindex` (`id`)
+     * ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+     */
+
     private DruidDataSource dataSource;
     private Connection connection;
     private Statement statement;
@@ -33,76 +53,43 @@ public class JdbcTest {
     }
 
     @Test
-    public void ddlTest() throws SQLException {
+    public void saveDataWithoutTranslation() throws SQLException {
 
-        boolean execute = statement.execute("        CREATE TABLE `user` (\n" +
-                "  `id` int NOT NULL AUTO_INCREMENT,\n" +
-                "  `username` varchar(100) DEFAULT NULL,\n" +
-                "        PRIMARY KEY (`id`),\n" +
-                "        UNIQUE KEY `user_id_uindex` (`id`)\n" +
-                ") ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci");
-        System.out.println(execute);
+        statement.execute("insert into teacher(teacher_name) values ('Miss Li')");
+
+        statement.execute("insert into user(id,username) values(1,'duplicate')");
+
     }
 
     @Test
-    public void dmlTest() throws SQLException {
-        statement.executeUpdate("insert into user(username)values (4)");
+    public void saveDataWithTranslation() throws SQLException {
 
-        statement.executeUpdate("update user set username='小明' where id=4");
+        connection.setAutoCommit(false);
+        try {
+            statement.execute("insert into teacher(teacher_name) values ('Miss Wang')");
 
-        statement.executeUpdate("delete from user where id=5");
-    }
-
-    @Test
-    public void dqlTest() throws SQLException {
-        ResultSet resultSet = statement.executeQuery("select * from user");
-        int row = 1;
-        while (resultSet.next()) {
-            int id = resultSet.getInt(1);
-            String username = resultSet.getString("username");
-            System.out.printf("第%d行数据:id:%d,username:%s%n", row++, id, username);
+            statement.execute("insert into user(id,username) values(1,'duplicate')");
+        } catch (Exception e) {
+            e.printStackTrace();
+            connection.rollback();
         }
+
+//        connection.commit();
+        System.out.println("=====");
     }
 
     @Test
-    public void batchStatementDMLTest() throws SQLException {
-        String sql1 = "insert into user(username) values('小王')";
-        String sql2 = "insert into user(username) values('小刘')";
-        String sql3 = "update  user set username='小刘刘' where username='小刘'";
-        statement.addBatch(sql1);
-        statement.addBatch(sql2);
-        statement.addBatch(sql3);
-        int[] result = statement.executeBatch();
-        for (int i : result) {
-            System.out.printf("执行结果:%d\n", i);
-        }
+    public void saveDataWithTranslationProxy() throws SQLException {
+        JdbcService jdbcService=new JdbcServiceImpl(statement);
+
+        TransactionProxy transactionProxy=new TransactionProxy(connection,jdbcService);
+
+        JdbcService jdbcServiceProxy = (JdbcService) Proxy.newProxyInstance(jdbcService.getClass().getClassLoader(),
+                jdbcService.getClass().getInterfaces(), transactionProxy);
+
+        jdbcServiceProxy.saveDataWithTranslation();
     }
 
-    @Test
-    public void preparedStatementDMLTest() throws SQLException {
-        String sql = "insert into user(username) values(?)";
-        PreparedStatement preparedStatement = connection.prepareStatement(sql);
-        preparedStatement.setString(1, "小李");
-        int result = preparedStatement.executeUpdate();
-        System.out.println(result);
-    }
-
-    @Test
-    public void preparedStatementDQLTest() throws SQLException {
-        String sql = "select * from user where id=? and username=?";
-        PreparedStatement preparedStatement = connection.prepareStatement(sql);
-        preparedStatement.setInt(1, 1);
-        preparedStatement.setString(2, "小张");
-
-
-        ResultSet resultSet = preparedStatement.executeQuery();
-        int row = 1;
-        while (resultSet.next()) {
-            int id = resultSet.getInt(1);
-            String username = resultSet.getString("username");
-            System.out.printf("第%d行数据:id:%d,username:%s%n", row++, id, username);
-        }
-    }
 
     @After
     public void destroy() throws SQLException {
